@@ -1,18 +1,18 @@
-
 FROM python:3.11-slim
 
-# System deps
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
-
-# Workdir
 WORKDIR /app
 
-# Python deps
+# Copia requirements primero
 COPY requirements.txt .
+
+# Instala dependencias de Python directamente
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App code
-COPY api ./api
-COPY worker ./worker
+# Copia el resto del código
+COPY . .
 
-ENV PYTHONUNBUFFERED=1
+# Puerto para FastAPI
+ENV PORT=8000
+
+# Comando para arrancar la API
+CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT}"]
