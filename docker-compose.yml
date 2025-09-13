@@ -1,0 +1,53 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    ports:
+      - "8000:8000"
+    command: sh -c "uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  worker:
+    build: .
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    command: sh -c "celery -A worker.celery_app.celery worker --loglevel=INFO"
+
+  beat:
+    build: .
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    command: sh -c "celery -A worker.celery_app.celery beat --loglevel=INFO"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: eddsec
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d eddsec"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  dashboard:
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
