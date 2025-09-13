@@ -1,0 +1,4 @@
+FROM nginx:alpine
+# Copia el build estático (ya está listo en v0.5 como SPA simple)
+COPY frontend /usr/share/nginx/html
+# Nginx escucha en 80 dentro del contenedor; Railway se encarga del enrutamiento/puertos
