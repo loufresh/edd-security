@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api ./api
+COPY worker ./worker
+
+ENV PYTHONUNBUFFERED=1
+# Necesita Redis y DB por variables
+CMD ["celery", "-A", "worker.celery_app.celery", "worker", "--loglevel=INFO"]
