@@ -1,6 +1,6 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from api.routes import jobs, alerts, integrations, auth, webhooks, events, runs
 from api.db import engine
 from api.models_db import Base
@@ -12,7 +12,7 @@ Base.metadata.create_all(bind=engine)
 # CORS for local dashboard & quick demos
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080","*"],
+    allow_origins=["http://localhost:8080", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,3 +29,29 @@ app.include_router(events.router, prefix="/events", tags=["events"])
 @app.get("/")
 def root():
     return {"name": "EDD Security API", "ok": True, "version": "0.5.0"}
+
+
+# 🔒 Custom OpenAPI schema para activar Authorize en Swagger
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="EDD Security API",
+        version="0.5.0",
+        description="API Docs",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    for path in openapi_schema["paths"]:
+        for method in openapi_schema["paths"][path]:
+            openapi_schema["paths"][path][method]["security"] = [{"bearerAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
