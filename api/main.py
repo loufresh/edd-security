@@ -6,11 +6,6 @@ from api.db import engine
 from api.models_db import Base
 import os
 
-# Si existe la base SQLite, la borra al iniciar
-if os.path.exists("eddsec.db"):
-    os.remove("eddsec.db")
-    print(">>> eddsec.db borrado, se recreará vacío")
-
 app = FastAPI(title="EDD Security API", version="0.5.0")
 Base.metadata.create_all(bind=engine)
 
