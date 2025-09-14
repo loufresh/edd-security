@@ -81,5 +81,5 @@ class Alert(Base):
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True)
     severity: Mapped[str] = mapped_column(String(16))
     message: Mapped[str] = mapped_column(String)
-    metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    extra_data: Mapped[dict | None] = mapped_column("extra_data", JSON, nullable=True)
     created_at: Mapped[str] = mapped_column(DateTime(timezone=True), server_default=func.now())
